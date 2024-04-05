@@ -1,17 +1,30 @@
 package com.example.vanduong.models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 import java.util.List;
+import java.util.Locale;
+
 @Entity
+@Table(name="tblProduct")
 public class Product {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    //@GeneratedValue(strategy = GenerationType.AUTO)
+    @SequenceGenerator(
+            name="product_sequence",
+            sequenceName = "product_sequence",
+            allocationSize = 1
+    )
+
+    @GeneratedValue(
+            strategy = GenerationType.SEQUENCE,
+            generator = "product_sequence"
+    )
     private Long id;
+
+
+    @Column(nullable = false, unique = true, length = 300)
     private String name;
     private double price;
     private String date;
