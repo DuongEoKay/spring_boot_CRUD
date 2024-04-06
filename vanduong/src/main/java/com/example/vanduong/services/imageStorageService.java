@@ -2,9 +2,14 @@ package com.example.vanduong.services;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.tomcat.util.bcel.Const;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+
 import org.springframework.stereotype.Service;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -83,16 +88,37 @@ public class imageStorageService  implements IStorageService{
 
     @Override
     public Stream<Path> loadAll() {
-        return Stream.empty();
+        try {
+            return Files.walk(this.storageFolder, 1)
+                    .filter(path -> !path.equals(this.storageFolder))
+                    .map(this.storageFolder::relativize);
+        }catch (IOException exception)
+        {
+            throw new RuntimeException("failed to load stored files !!!",exception);
+        }
     }
 
     @Override
-    public byte[] readFileContent(String filename) {
-        return new byte[0];
+    public byte[] readFileContent(String fileName) {
+        try {
+            Path file =storageFolder.resolve(fileName);
+            Resource resource = new UrlResource(file.toUri());
+            if(resource.exists()||resource.isReadable())
+            {
+                byte[] bytes = StreamUtils.copyToByteArray(resource.getInputStream());
+                return bytes;
+            }
+            else{
+                throw new RuntimeException("could not read file"+fileName);
+            }
+        }
+        catch (IOException exception)
+        {
+            throw new RuntimeException("could not read file: "+fileName,exception);
+        }
     }
 
     @Override
     public void deleteAllFile() {
-
     }
 }
